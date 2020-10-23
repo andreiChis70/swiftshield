@@ -5,13 +5,15 @@ final class SourceKitObfuscator: ObfuscatorProtocol {
     let logger: LoggerProtocol
     let dataStore: SourceKitObfuscatorDataStore
     let ignorePublic: Bool
+    let namesToIgnore: Set<String>
     weak var delegate: ObfuscatorDelegate?
 
-    init(sourceKit: SourceKit, logger: LoggerProtocol, dataStore: SourceKitObfuscatorDataStore, ignorePublic: Bool) {
+    init(sourceKit: SourceKit, logger: LoggerProtocol, dataStore: SourceKitObfuscatorDataStore, namesToIgnore: Set<String>, ignorePublic: Bool) {
         self.sourceKit = sourceKit
         self.logger = logger
         self.dataStore = dataStore
         self.ignorePublic = ignorePublic
+        self.namesToIgnore = namesToIgnore
     }
 
     var requests: sourcekitd_requests! {
@@ -68,6 +70,10 @@ extension SourceKitObfuscator {
 
         let name = rawName.removingParameterInformation
 
+        if namesToIgnore.contains(name) {
+            return
+        }
+        
         if dict.isCodingKeysEnumElement {
             return
         }

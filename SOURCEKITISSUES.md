@@ -3,14 +3,18 @@
 - Classes
 - Structs
 - Methods
-- Enums (except ones that inherit from `CodingKey`)
+- Properties (see below for exceptions)
+- Enums (see below for exceptions)
 - Enum cases
 
 # What SwiftShield can't obfuscate
 
-- Properties: Although we can obfuscate them, we avoid doing so because of `Codable` types. We can fix it by checking the inheritance tree of a property's outer type.
 - `typealias` and `associatedtypes`: SourceKit doesn't always index them, so we avoid them to prevent broken projects. Note that these can't be reverse engineered as they are purely an editor thing, so avoiding them isn't a problem!
-- Module names: Not implemented yet, but possible.
+- Local content inside methods (like argument names and inner properties). They aren't indexed, but they also can't be reverse engineered.
+- Properties from types that inherit from `Codable`, `Encodable` or `Decodable`, as obfuscating them would break your project.
+- Properties belonging to `@objc` classes. This is because SourceKit cannot inspect non-Swift content, and we need it to determine if a property's parent inherits from `Codable`.
+- Enums that inherit from `CodingKey`, as obfuscating them would break your project.
+- Module names: Not implemented yet.
 
 # SourceKit Bugs
 
@@ -19,13 +23,10 @@ These are problems that SourceKit has that are unrelated to a specific feature, 
 **Note: You can use the `--ignore-targets` argument to completely disable the obfuscation of specific targets.**
 
 - [(SR-9020)](https://bugs.swift.org/browse/SR-9020) Legacy KeyPaths that include types (like `#keyPath(Foo.bar)`) will not get indexed.
-- [(SR-12837)](https://bugs.swift.org/browse/SR-12837)`@objc optional` protocol methods don't have their references indexed.
+- **Fixed in Swift 5.3**: `@objc optional` protocol methods don't have their references indexed.
+- **Fixed in Swift 5.3**: The postfix of an `is` parameter doesn't get indexed. (`foo is MyType`)
 
 # Additional important information
-
-## Codable Enums need to have a specific suffix
-
-To prevent `Codable` enums from being obfuscated, we avoid obfuscating enum cases belonging to enums that have the `CodingKeys` suffix. Make sure your enums follow this pattern.
 
 ## SceneDelegate / App Extensions class references in plists should be untouched
 
@@ -39,7 +40,7 @@ The `--ignore-public` (or SDK Mode) obfuscates your app while ignoring anything 
 
 SourceKit has a problem where it can't detect content inside public extensions as such. For example, the following snippet will correctly avoid obfuscating `myMethod()`:
 
-```
+```swift
 extension Int {
     public func myMethod() {}
 }
@@ -47,7 +48,7 @@ extension Int {
 
 This one however, will be incorrectly obfuscated as SourceKit doesn't recognize `myMethod()` as being public (even though it is).
 
-```
+```swift
 public extension Int {
     func myMethod() {}
 }

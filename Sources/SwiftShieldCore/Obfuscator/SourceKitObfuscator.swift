@@ -84,6 +84,7 @@ extension SourceKitObfuscator {
         let name = rawName.removingParameterInformation
 
         if namesToIgnore.contains(name) {
+            logger.log("* Ignoring \(name) (USR: \(usr)) because its included in ignore-names", verbose: true)
             return
         }
 

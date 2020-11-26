@@ -17,14 +17,16 @@ jobs:
       run: swift --version
     - name: Set Xcode 11.7
       uses: maxim-lobanov/setup-xcode@v1.2.1
-      with: xcode-version: '11.7'
+      with:
+        xcode-version: '11.7'
     - name: Build 11.7
       run: make build
     - name: Run tests 11.7
       run: make test
     - name: Set Xcode 12.2
       uses: maxim-lobanov/setup-xcode@v1.2.1
-      with: xcode-version: '12.2'
+      with:
+        xcode-version: '12.2'
     - name: Build 12.2
       run: make build
     - name: Run tests 12.2
